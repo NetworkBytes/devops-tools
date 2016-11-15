@@ -1,0 +1,201 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template to build a Puppetmaster Server in AWS CloudFormation CLI
+Parameters:
+  InstanceType:
+    Description: PuppetServer CFT deploying in a EC2 instance type using Centos7
+    Type: String
+    Default: t2.small
+    AllowedValues:
+    - t2.micro
+    - t2.small
+    - t2.medium
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - c4.large
+    - c4.xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  KeyName:
+    Type: String
+    Default: puppetmaster
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the web server
+Mappings:
+  AWSInstanceType2Arch:
+    t2.micro:
+      Arch: '64'
+    t2.small:
+      Arch: '64'
+    t2.medium:
+      Arch: '64'
+    m3.medium:
+      Arch: '64'
+    m3.large:
+      Arch: '64'
+    m3.xlarge:
+      Arch: '64'
+    m3.2xlarge:
+      Arch: '64'
+    c4.large:
+      Arch: '64'
+    c4.xlarge:
+      Arch: '64'
+  AWSRegionArch2AMI:
+    ap-southeast-2:
+      '32': ami-fedafc9d
+      '64': ami-fedafc9d
+Resources:
+  User:
+    Type: AWS::IAM::User
+    Properties:
+      Path: "/"
+      Policies:
+      - PolicyName: root
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: "*"
+            Resource: "*"
+  HostKeys:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName:
+        Ref: User
+  PuppetServer:
+    Type: AWS::EC2::Instance
+    DependsOn:
+    - GatewayToInternet
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          files: {}
+    Properties:
+      ImageId:
+        Fn::FindInMap:
+        - AWSRegionArch2AMI
+        - Ref: AWS::Region
+        - Fn::FindInMap:
+          - AWSInstanceType2Arch
+          - Ref: InstanceType
+          - Arch
+      KeyName:
+        Ref: KeyName
+      InstanceType:
+        Ref: InstanceType
+      NetworkInterfaces:
+      - NetworkInterfaceId:
+          Ref: mainXface
+        DeviceIndex: '0'
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "#!/bin/bash -v\n"
+            -  "curl https://raw.githubusercontent.com/NetworkBytes/devops-tools/master/puppet/puppetmaster-boostrap.sh|sh\n"
+  IPAddress:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  IPAssoc:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+        - IPAddress
+        - AllocationId
+      NetworkInterfaceId:
+        Ref: mainXface
+  mainXface:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      GroupSet:
+      - Ref: FrontendGroup
+      SubnetId:
+        Ref: PublicSubnet
+      Description: ethernet-interface
+      SourceDestCheck: 'true'
+  FrontendGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: VPC
+      GroupDescription: Enable SSH and access and Puppetmaster ports
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '3000'
+        ToPort: '3000'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '8140'
+        ToPort: '8140'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 0.0.0.0/0
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: 'True'
+      EnableDnsHostnames: 'True'
+      CidrBlock: 172.31.0.0/16
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Network
+        Value: Public
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 172.31.16.0/24
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Netowrk
+        Value: AZ1
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  GatewayToInternet:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayToInternet
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: PublicSubnet
+      RouteTableId:
+        Ref: PublicRouteTable
+Outputs:
+  Instance:
+    Value:
+      Fn::GetAtt:
+      - PuppetServer
+      - PublicDnsName
+    Description: DNS Name of the newly created EC2 instance
