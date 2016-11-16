@@ -27,7 +27,7 @@ autosign = true
 #[agent]
 #certname = puppet
 EOF
-
+export PATH=$PATH:/opt/puppetlabs/bin
 sed -ie 's/JAVA_ARGS="-Xms2g -Xmx2g/JAVA_ARGS="-Xms700m -Xmx700m/' /etc/sysconfig/puppetserver
 
 echo " - Installing Gems"
