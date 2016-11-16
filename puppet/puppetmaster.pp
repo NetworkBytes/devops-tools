@@ -1,5 +1,5 @@
 
-node puppetmaster {
+node default {
  
   # Configure puppetdb and its underlying database
   class { 'puppetdb': }
