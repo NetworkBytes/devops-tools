@@ -13,7 +13,7 @@ echo " - Configuring Hostname"
 hostnamectl set-hostname $HOST_NAME --static
 echo "preserve_hostname: true" >> /etc/cloud/cloud.cfg
 hostname $HOST_NAME
-sed -ie 's/127.0.0.1   localhost/127.0.0.1 puppet $HOST_NAME localhost/' /etc/hosts
+sed -ie "s/127.0.0.1   localhost/127.0.0.1 puppet $HOST_NAME localhost/" /etc/hosts
 
 
 
