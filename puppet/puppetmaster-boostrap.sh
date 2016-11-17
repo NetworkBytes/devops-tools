@@ -31,7 +31,7 @@ export PATH=$PATH:/opt/puppetlabs/bin
 sed -ie 's/JAVA_ARGS="-Xms2g -Xmx2g/JAVA_ARGS="-Xms700m -Xmx700m/' /etc/sysconfig/puppetserver
 
 echo " - Installing Gems"
-gem install r10k hiera-eyaml
+gem install r10k hiera-eyaml hiera-eyaml-kms
 
 echo " - Installing Puppet Modules"
 puppet module install puppetlabs-puppetdb
@@ -51,6 +51,5 @@ curl https://raw.githubusercontent.com/NetworkBytes/devops-tools/master/puppet/p
 
 
 #TODO
-# add hiera-eyaml, hier-eyaml-kms
 #R10K pull 
 #verify
