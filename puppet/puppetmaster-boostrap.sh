@@ -30,14 +30,14 @@ EOF
 export PATH=$PATH:/opt/puppetlabs/bin
 sed -ie 's/JAVA_ARGS="-Xms2g -Xmx2g/JAVA_ARGS="-Xms700m -Xmx700m/' /etc/sysconfig/puppetserver
 
+# Ruby-devel required by generate-puppetfile
+yum -y install ruby ruby-devel
+
 echo " - Installing Gems"
 GEMS="r10k hiera-eyaml hiera-eyaml-kms deep_merge aws-sdk generate-puppetfile"
   /bin/gem install $GEMS
   /opt/puppetlabs/server/bin/puppetserver gem install $GEMS
   /opt/puppetlabs/puppet/bin/gem install $GEMS
-
-# Ruby-devel required by generate-puppetfile
-yum -y install ruby-devel
 
 echo " - Installing Puppet Modules"
 puppet module install puppetlabs-puppetdb
