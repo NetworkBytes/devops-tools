@@ -46,22 +46,6 @@ Mappings:
       '32': ami-fedafc9d
       '64': ami-fedafc9d
 Resources:
-  User:
-    Type: AWS::IAM::User
-    Properties:
-      Path: "/"
-      Policies:
-      - PolicyName: root
-        PolicyDocument:
-          Statement:
-          - Effect: Allow
-            Action: "*"
-            Resource: "*"
-  HostKeys:
-    Type: AWS::IAM::AccessKey
-    Properties:
-      UserName:
-        Ref: User
   PuppetServer:
     Type: AWS::EC2::Instance
     DependsOn:
@@ -83,6 +67,7 @@ Resources:
         Ref: KeyName
       InstanceType:
         Ref: InstanceType
+      IamInstanceProfile: "puppet"
       NetworkInterfaces:
       - NetworkInterfaceId:
           Ref: mainXface
