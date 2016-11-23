@@ -9,9 +9,24 @@ node default {
   class { '::hiera':
     backends => ['eyaml'],
     hierarchy => [
-      '%{environment}/%{calling_class}',
-      '%{environment}',
-      'common',
+      'nodes/%{::trusted.certname}',
+      'apps/%{::host.application}/%{::host.role}.%{::host.environment}.%{::host.site}',
+      'apps/%{::host.application}/%{::host.role}.%{::host.environment}',
+      'apps/%{::host.application}/%{::host.role}.%{::host.site}',
+      'apps/%{::host.application}/%{::host.role}',
+      'apps/%{::host.application}.%{::host.environment}.%{::host.site}',
+      'apps/%{::host.application}.%{::host.environment}',
+      'apps/%{::host.application}',
+
+      'domain/%{::host.domain}',
+
+      'kernel/%{::kernel}',
+
+      'modules/%{calling_class_path}/%{hiera_file}',
+      'modules/%{calling_class_path}',
+
+      # CATCH ALL
+      'global'
     ],
     eyaml           => true,
     eyaml_extension => 'yaml',
