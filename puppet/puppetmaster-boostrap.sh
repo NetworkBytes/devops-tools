@@ -53,7 +53,7 @@ echo " - Initial Puppet run"
 # kick off a run to generate certs etc...
 puppet agent -t
 
-# Configure basic puppet server
+echo " - Running puppet apply to get a basic puppet master running"
 curl https://raw.githubusercontent.com/NetworkBytes/devops-tools/master/puppet/puppetmaster.pp |puppet apply -v
 
 echo " - R10K run"

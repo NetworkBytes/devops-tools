@@ -35,7 +35,7 @@ node default {
     #    'kms-key-id'     => '87d7d8c8-0c7b-41f0-b06d-51e7e4e73524',
     #    'kms-aws-region' => 'ap-southeast-2'
     #  }
-    },
+    #},
     merge_behavior  => 'deeper'
   }
   file {'/etc/eyaml': ensure => 'directory'}
