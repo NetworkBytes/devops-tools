@@ -23,9 +23,6 @@ yum -y install puppetserver
 cat << EOF >> /etc/puppetlabs/puppet/puppet.conf
 dns_alt_names = puppet,$HOST_NAME
 autosign = true
-#certname = puppet
-#[agent]
-#certname = puppet
 EOF
 export PATH=$PATH:/opt/puppetlabs/bin
 sed -ie 's/JAVA_ARGS="-Xms2g -Xmx2g/JAVA_ARGS="-Xms700m -Xmx700m/' /etc/sysconfig/puppetserver
@@ -57,7 +54,7 @@ echo " - Running puppet apply to get a basic puppet master running"
 curl https://raw.githubusercontent.com/NetworkBytes/devops-tools/master/puppet/puppetmaster.pp |puppet apply -v
 
 echo " - R10K run"
-r10k deploy environment -v
+r10k deploy environment -v -p
 
 echo " - Final Puppet run"
 puppet agent -t

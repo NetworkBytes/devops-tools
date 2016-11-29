@@ -20,6 +20,7 @@ node default {
 
       'domain/%{::host.domain}',
 
+      'kernel/%{::kernel}.%{::os.name}',
       'kernel/%{::kernel}',
 
       'modules/%{calling_class_path}/%{hiera_file}',
@@ -30,12 +31,12 @@ node default {
     ],
     eyaml           => true,
     eyaml_extension => 'yaml',
-    #backend_options => {
-    #  'eyaml' => {
-    #    'kms-key-id'     => '87d7d8c8-0c7b-41f0-b06d-51e7e4e73524',
-    #    'kms-aws-region' => 'ap-southeast-2'
-    #  }
-    #},
+    backend_options => {
+      'eyaml' => {
+        'kms-key-id'     => '87d7d8c8-0c7b-41f0-b06d-51e7e4e73524',
+        'kms-aws-region' => 'ap-southeast-2'
+      }
+    },
     merge_behavior  => 'deeper'
   }
   file {'/etc/eyaml': ensure => 'directory'}
